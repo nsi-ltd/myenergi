@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  zappi:
+    image: myenergi
+    build: .
+    container_name: myenergi
+    restart: always
+    environment:
+      - MQTT_HOST=${MQTT_HOST}
+      - MQTT_PORT=${MQTT_PORT}
+      - MQTT_TOPIC=${MQTT_TOPIC}
+      - MYENERGI_URL=${MYENERGI_URL}
+      - MYENERGI_USER=${MYENERGI_USER}
+      - MYENERGI_PASSWORD=${MYENERGI_PASSWORD}
+
