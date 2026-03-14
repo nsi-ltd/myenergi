@@ -7,7 +7,7 @@ The Python code can be run from the command line, but reqires environment variab
 
 A Docker build configuration integrates the Python code into a Docker image.
 
-A Docker compose script provides the startup of a ruunning container.
+A Docker compose script provides the startup of a running container.
 
 The docker-compose.yml takes environment variables from the hidden .env file.
 
