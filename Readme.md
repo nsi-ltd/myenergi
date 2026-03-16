@@ -1,7 +1,11 @@
 **Myenergi.py**
 
 A simple Python script to register with the Myenergi API and post data periodically
-to an MQTT topic. The collection rate is hard coded to 60 seconds but could e changed.
+to an MQTT topic. The collection rate is hard coded to 60 seconds but could be changed.
+
+Sensor data are posted to <myenergi>/sensors/#
+
+Boost timer settings for Eddi, Libbi, and Zappi are posted to <myenergi>/boost/#
 
 The Python code can be run from the command line, but reqires environment variables to be set.
 

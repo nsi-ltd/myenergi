@@ -85,7 +85,20 @@ while (True) :
               l = k[0]
 
               if "sno" in l:
-                mqttc.publish(mqtt_topic + '/' + j + '/' + str(l["sno"]), json.dumps(l), 2, True)
+                mqttc.publish(mqtt_topic + '/sensors/' + j + '/' + str(l["sno"]), json.dumps(l), 2, True)
+
+                # now try and get the boost timer settings
+                dc = str(l["deviceClass"])[0]
+
+                if dc in ['Z', 'E', 'L']:
+                  url = 'https://' + server + '.myenergi.net/cgi-boost-time-' + dc + str(l["sno"])
+                  r = requests.get(url, auth=HTTPDigestAuth(myenergi_user,myenergi_password), headers=headers, timeout=20)
+
+                  if r.status_code == 200:
+                    data=json.loads(r.content)
+
+                    mqttc.publish(mqtt_topic + '/boost/' + j + '/' + str(l["sno"]), json.dumps(data), 2, True)
+
 
     r.close()
     sleep_time = 60
