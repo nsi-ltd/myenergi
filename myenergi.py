@@ -15,11 +15,11 @@ from queue import Full
 def on_connect(client, userdata, flags, rc):
   global mqtt_topic
   
-  print('Connected with result code ' + str(rc))
+  print(f'Connected with result code {rc}')
 
   # Subscribing in on_connect() means that if we lose the connection and
   # reconnect then subscriptions will be renewed.
-  print('Subscribing to topic : ' + mqtt_topic + '/SetTimerSettings/#') 
+  print(f'Subscribing to topic : {mqtt_topic}/SetTimerSettings/#') 
   client.subscribe(mqtt_topic + '/SetTimerSettings/#')
 
 # The callback for when a PUBLISH message is received from the server.
@@ -32,14 +32,10 @@ def on_message(client, userdata, msg):
   payload = msg.payload.decode('utf-8')
   atoms = topic.split('/')
   
-  print('Topic: ' + topic + ', Payload: ' + payload)
-  print('Atoms: ' + repr(atoms))
+  print(f'Topic: {topic}, Payload: {payload}')
+  print(f'Atoms: {repr(atoms)}')
 
   try :
-    # url = 'https://' + server + '.myenergi.net/cgi-boost-time-Z20817413-14-0200-030-00000011'
-    # zappi/SetTimerSettings/zappi/20817413/11
-    # {"bsh": 7,"bsm": 30,"bdh": 0,"bdm": 15,"bdd": "01111100"}
-
     data=json.loads(payload)
     starthour = data['bsh']
     startminute = data['bsm']
@@ -57,23 +53,23 @@ def on_message(client, userdata, msg):
       return
     
     if starthour < 0 or starthour > 23:
-      print('Invalid start hour : ' + str(starthour))
+      print(f'Invalid start hour : {starthour}')
       return
     
     if not startminute in [0,15,30,45]:
-      print('Invalid start minute : ' + str(startminute))
+      print(f'Invalid start minute : {startminute}')
       return
     
     if duration < 0 or duration > 800:
-      print('Invalid duration : ' + str(duration))
+      print(f'Invalid duration : {duration}')
       return
     
     if not durationminute in [0,15,30,45]:
-      print('Invalid duration minute : ' + str(durationminute))
+      print(f'Invalid duration minute : {durationminute}')
       return
     
     if not re.fullmatch('^0[01]{7}$', days):
-      print('Invalid days : ' + str(days))
+      print(f'Invalid days : {days}')
       return
     
     writedata = { 'topic' : topic, 'data' : atoms, 'id' : atoms[2].upper()[0] + atoms[3], 'slt' : atoms[4], 'start' : f'{start:04d}', 'duration' : f'{duration:03d}', 'days' : days, 'payload' : payload }
@@ -109,7 +105,7 @@ except KeyError :
 try :
   port = int(mqtt_port)
 except ValueError :
-  print('MQTT-PORT not an integer : [' + mqtt_port + ']')
+  print(f'MQTT-PORT not an integer : [{mqtt_port}]')
   sys.exit(2)
 
 try :
@@ -162,7 +158,7 @@ set_other_count = 0
 
 while (True) :
   now = datetime.now()
-  current_time = now.strftime("%H:%M:%S")
+  current_time = now.strftime("%Y-%m-%d %H:%M:%S")
   
   server="s18"
 
@@ -172,7 +168,7 @@ while (True) :
 
     try :
       url = f'https://{server}.myenergi.net/cgi-boost-time-{item["id"]}-{item["slt"]}-{item["start"]}-{item["duration"]}-{item["days"]}'
-      print('Setting boost timer with url : ' + url)
+      print(f'Setting boost timer with url : {url}')
 
       headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
       r = requests.get(url, auth=HTTPDigestAuth(myenergi_user,myenergi_password), headers=headers, timeout=20)
@@ -186,12 +182,12 @@ while (True) :
         print(r.content)
       elif r.status_code == 429:
         set_429_count += 1
-        print('Too many requests, probably hit the rate limit')
+        print('Set - Too many requests, probably hit the rate limit')
         sleep_time *= 2
         queue.put(item)
       else :
         set_other_count += 1
-        print('Failed to set boost timer settings, status code : ' + str(r.status_code))
+        print(f'Set - Failed to set boost timer settings, status code : {r.status_code}')
     except :
       print("Failed to set boost timer settings")
   else :
@@ -233,10 +229,10 @@ while (True) :
                       mqttc.publish(mqtt_topic + '/boost/' + j + '/' + str(l["sno"]), json.dumps(data), 2, True)
                     elif r.status_code == 429:
                       boost_429_count += 1
-                      print('Too many requests, probably hit the rate limit')
+                      print('Boost - Too many requests, probably hit the rate limit')
                     else :
                       boost_other_count += 1
-                      print('Failed to get boost timer settings, status code : ' + str(r.status_code))
+                      print(f'Boost - Failed to get boost timer settings, status code : {r.status_code}')
 
       r.close()
 
@@ -245,11 +241,11 @@ while (True) :
   if status_code == 200:
     sleep_time = 60
   elif status_code == 429:
-    print('Too many requests, probably hit the rate limit')
+    print(f'{current_time} - Increase time - Too many requests, probably hit the rate limit')
     sleep_time *= 2
   else :
-    print('Failed to login, status code : ' + str(status_code))
-    sleep_time = 60
+    print (f'{current_time} - Increase time - Failed to login, status code : {status_code}')
+    sleep_time *= 2
 
   mqttc.publish(mqtt_topic + '/status',
                 json.dumps(
