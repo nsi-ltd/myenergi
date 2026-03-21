@@ -262,19 +262,4 @@ while (True) :
                    "set_other_count": set_other_count
                   }), 2, True)
 
-  mqttc.publish(mqtt_topic + '/status',
-                json.dumps(
-                  {"sleep_time": sleep_time,
-                   "status_code": status_code,
-                   "sensor_200_count": sensor_200_count,
-                   "sensor_429_count": sensor_429_count,
-                   "sensor_other_count": sensor_other_count,
-                   "boost_200_count": boost_200_count,
-                   "boost_429_count": boost_429_count,
-                   "boost_other_count": boost_other_count,
-                   "set_200_count": set_200_count,
-                   "set_429_count": set_429_count,
-                   "set_other_count": set_other_count
-                  }), 2, True)
-
   time.sleep(sleep_time)
